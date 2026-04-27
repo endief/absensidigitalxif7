@@ -7,7 +7,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- SUPABASE CLIENT -->
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -175,36 +175,12 @@
         .btn-delete-small { background: #fee2e2; color: #ef4444; } .btn-delete-small:hover { background: #fca5a5; }
         .btn-foto-small { background: #e0f2fe; color: #0284c7; } .btn-foto-small:hover { background: #bae6fd; }
 
-        /* Loading Overlay */
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(248, 250, 252, 0.97);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 9999; flex-direction: column; gap: 16px;
-            font-family: var(--font-body);
-        }
-        #loading-overlay .spinner {
-            width: 44px; height: 44px;
-            border: 4px solid #e2e8f0;
-            border-top-color: #0ea5e9;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        #loading-overlay p { color: var(--text-muted); font-weight: 600; font-size: 14px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
         @media (max-width: 600px) {
             .admin-controls { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-
-    <!-- LOADING OVERLAY -->
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <p>Memuat Data...</p>
-    </div>
 
     <div class="glow-bg"></div>
 
@@ -461,99 +437,10 @@
     </div>
 
     <script>
-        // ============================================================
-        // SUPABASE SETUP
-        // Jalankan SQL berikut di Supabase SQL Editor sebelum pakai:
-        //
-        // CREATE TABLE IF NOT EXISTS absensi (
-        //   id TEXT PRIMARY KEY,
-        //   lock_key TEXT UNIQUE,
-        //   waktu_str TEXT,
-        //   hari TEXT,
-        //   mapel TEXT,
-        //   nama TEXT,
-        //   status TEXT,
-        //   keterangan TEXT,
-        //   foto TEXT,
-        //   created_at TIMESTAMPTZ DEFAULT now()
-        // );
-        // ALTER TABLE absensi ENABLE ROW LEVEL SECURITY;
-        // CREATE POLICY "Allow all" ON absensi FOR ALL USING (true) WITH CHECK (true);
-        //
-        // CREATE TABLE IF NOT EXISTS app_settings (
-        //   key TEXT PRIMARY KEY,
-        //   value TEXT
-        // );
-        // ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
-        // CREATE POLICY "Allow all" ON app_settings FOR ALL USING (true) WITH CHECK (true);
-        // INSERT INTO app_settings (key, value) VALUES ('status_absen_XIF7','dibuka') ON CONFLICT (key) DO NOTHING;
-        //
-        // Buat Storage Bucket bernama: foto-absensi (set Public = true)
-        // ============================================================
-
-        const SUPABASE_URL  = 'https://brtxlwjoyheeyeqcvhfi.supabase.co';
-        const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydHhsd2pveWhlZXllcWN2aGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzg5OTYsImV4cCI6MjA5MjYxNDk5Nn0.dSTRkB3Np4Rhmb0yfjNZ_CksO_QGYVXodW3b1mBtnOQ';
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // ============================================================
-        // HELPER: Konversi row DB (snake_case) → payload JS (camelCase)
-        // ============================================================
-        function dbToPayload(row) {
-            return {
-                id:          row.id,
-                lockKey:     row.lock_key,
-                waktuStr:    row.waktu_str,
-                hari:        row.hari,
-                mapel:       row.mapel,
-                nama:        row.nama,
-                status:      row.status,
-                keterangan:  row.keterangan,
-                foto:        row.foto || ""
-            };
-        }
-
-        function payloadToDb(p) {
-            return {
-                id:         p.id,
-                lock_key:   p.lockKey,
-                waktu_str:  p.waktuStr,
-                hari:       p.hari,
-                mapel:      p.mapel,
-                nama:       p.nama,
-                status:     p.status,
-                keterangan: p.keterangan,
-                foto:       p.foto || ""
-            };
-        }
-
-        // ============================================================
-        // HELPER: Upload foto/surat ke Supabase Storage
-        // ============================================================
-        async function uploadFoto(base64Data, namaFile) {
-            try {
-                const res  = await fetch(base64Data);
-                const blob = await res.blob();
-                const mime = blob.type || 'image/jpeg';
-                const ext  = mime.includes('png') ? 'png' : mime.includes('pdf') ? 'pdf' : 'jpg';
-                const safe = namaFile.replace(/[^a-zA-Z0-9]/g, '_');
-                const path = `${safe}_${Date.now()}.${ext}`;
-
-                const { data: up, error: upErr } = await sb.storage
-                    .from('foto-absensi')
-                    .upload(path, blob, { contentType: mime, upsert: false });
-
-                if (upErr) throw upErr;
-
-                const { data: urlData } = sb.storage
-                    .from('foto-absensi')
-                    .getPublicUrl(up.path);
-
-                return urlData.publicUrl;
-            } catch (err) {
-                console.error('Upload error:', err);
-                return base64Data; // fallback: simpan base64 jika upload gagal
-            }
-        }
+        // --- SUPABASE SETUP ---
+        const supabaseUrl = 'https://brtxlwjoyheeyeqcvhfi.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydHhsd2pveWhlZXllcWN2aGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzg5OTYsImV4cCI6MjA5MjYxNDk5Nn0.dSTRkB3Np4Rhmb0yfjNZ_CksO_QGYVXodW3b1mBtnOQ';
+        const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
         // --- 1. DATA JADWAL & NAMA ---
         const jadwalPelajaran = {
@@ -577,9 +464,59 @@
 
         let stateNamaTerpilih = "";
 
-        // --- 2. DATABASE (diganti dari localStorage ke Supabase) ---
-        let dbAbsensi = [];
-        let statusAbsensi = 'dibuka'; // cache in-memory untuk status buka/tutup absensi
+        // --- 2. SISTEM DATABASE SUPABASE (menggantikan localStorage) ---
+        let dbAbsensi = []; // akan diisi dari Supabase
+        let streamKamera = null;
+
+        // Fungsi untuk memuat semua data absensi dari Supabase
+        async function loadAbsensiFromSupabase() {
+            const { data, error } = await supabase.from('absensi').select('*').order('created_at', { ascending: false });
+            if (error) {
+                console.error('Gagal memuat data absensi:', error);
+                return [];
+            }
+            // mapping kolom ke format yang dipakai di kode (id, hari, mapel, nama, status, keterangan, foto, waktuStr, lockKey)
+            return data.map(item => ({
+                id: item.id,
+                hari: item.hari,
+                mapel: item.mapel,
+                nama: item.nama,
+                status: item.status,
+                keterangan: item.keterangan || '-',
+                foto: item.foto || '',
+                waktuStr: item.waktu_str || new Date(item.created_at).toLocaleString('id-ID'),
+                lockKey: item.lock_key || `absen_XIF7_${item.nama}_${item.hari}_${item.mapel}`
+            }));
+        }
+
+        // Muat data awal
+        (async () => {
+            dbAbsensi = await loadAbsensiFromSupabase();
+            // Update tampilan yang mungkin membutuhkan data awal (jika sudah di panel admin, akan dirender saat switch)
+            // Juga setup realtime subscription
+            supabase
+                .channel('absensi-changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'absensi' }, async (payload) => {
+                    // Reload data penuh setelah ada perubahan (insert/delete/update)
+                    dbAbsensi = await loadAbsensiFromSupabase();
+                    // Jika sedang di dashboard admin, render ulang tabel
+                    const dashboardPanel = document.getElementById('panel-dashboard-admin');
+                    if (dashboardPanel.classList.contains('active')) {
+                        renderTabelAdmin();
+                    }
+                    // Jika panel absen aktif, mungkin perlu render ulang nama untuk lock
+                    const absenPanel = document.getElementById('panel-absen');
+                    if (absenPanel.classList.contains('active')) {
+                        renderNama(document.getElementById('search-nama').value);
+                    }
+                    // Jika modal kehadiran terbuka, render ulang
+                    const modalKehadiran = document.getElementById('modal-kehadiran');
+                    if (modalKehadiran.classList.contains('show')) {
+                        renderTabelKehadiran();
+                    }
+                })
+                .subscribe();
+        })();
 
         // --- 3. FITUR ADMIN: LOGIN & KONTROL ---
         function loginAdmin() {
@@ -599,18 +536,20 @@
 
         function logoutAdmin() { switchPanel('panel-awal', false); }
 
-        // DIUBAH: toggleStatusAbsensi → simpan ke Supabase app_settings
         async function toggleStatusAbsensi() {
-            const newStatus = statusAbsensi === 'ditutup' ? 'dibuka' : 'ditutup';
-            const { error } = await sb.from('app_settings')
-                .upsert({ key: 'status_absen_XIF7', value: newStatus }, { onConflict: 'key' });
-
-            if (error) {
-                Swal.fire({title:'Gagal', text:'Gagal mengubah status absensi.', icon:'error', timer:2500, timerProgressBar:true, showConfirmButton:false});
+            // Ambil status saat ini dari app_settings
+            let { data, error } = await supabase.from('app_settings').select('value').eq('key', 'status_absen_XIF7').single();
+            let isClosed = data && data.value === 'ditutup';
+            
+            let newStatus = isClosed ? 'dibuka' : 'ditutup';
+            const { error: upsertError } = await supabase.from('app_settings').upsert({ key: 'status_absen_XIF7', value: newStatus }, { onConflict: 'key' });
+            if (upsertError) {
+                console.error('Gagal update status:', upsertError);
+                Swal.fire({title: 'Gagal', text: 'Gagal memperbarui status.', icon: 'error', timer:2500, timerProgressBar:true, showConfirmButton:false});
                 return;
             }
-            statusAbsensi = newStatus;
-            if (statusAbsensi === 'dibuka') {
+            
+            if(newStatus === 'dibuka') {
                 Swal.fire({title: 'Absensi Dibuka', text: 'Siswa dapat melakukan absen.', icon: 'success', timer: 2500, timerProgressBar: true, showConfirmButton: false});
             } else {
                 Swal.fire({title: 'Absensi Ditutup', text: 'Siswa tidak bisa absen lagi.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false});
@@ -618,17 +557,17 @@
             updateTeksTombolBukaTutup();
         }
 
-        // DIUBAH: gunakan in-memory statusAbsensi (bukan localStorage)
-        function updateTeksTombolBukaTutup() {
-            let isClosed = statusAbsensi === 'ditutup';
+        async function updateTeksTombolBukaTutup() {
+            let { data, error } = await supabase.from('app_settings').select('value').eq('key', 'status_absen_XIF7').single();
+            let isClosed = data && data.value === 'ditutup';
             let btn = document.getElementById('btn-toggle-absen');
             if(isClosed) { btn.innerText = "Buka Absensi"; btn.style.background = "#10b981"; btn.style.color = "#fff"; } 
             else { btn.innerText = "Tutup Absensi"; btn.style.background = "#f59e0b"; btn.style.color = "#fff"; }
         }
 
-        // DIUBAH: gunakan in-memory statusAbsensi (bukan localStorage)
-        function cekDanBukaAbsen() {
-            let isClosed = statusAbsensi === 'ditutup';
+        async function cekDanBukaAbsen() {
+            let { data, error } = await supabase.from('app_settings').select('value').eq('key', 'status_absen_XIF7').single();
+            let isClosed = data && data.value === 'ditutup';
             if(isClosed) Swal.fire({title:'Tidak bisa absen', text:'Absensi telah ditutup.', icon:'error', timer: 3000, timerProgressBar: true, showConfirmButton: false});
             else switchPanel('panel-absen');
         }
@@ -636,6 +575,7 @@
         // --- 4. FITUR ADMIN: KEHADIRAN (MODAL NUMPUK RAPI - KONSISTEN) ---
         function bukaModalKehadiran() {
             openModal('modal-kehadiran');
+            // Reset Semua Input Filter
             document.getElementById('filter-admin-hari-val').value = "";
             document.getElementById('teks-admin-hari').innerText = "Pilih Hari...";
             document.getElementById('btn-admin-hari').classList.remove('selected');
@@ -656,6 +596,7 @@
             document.getElementById('teks-admin-hari').innerText = hari;
             document.getElementById('btn-admin-hari').classList.add('selected');
             
+            // Reset Mapel karena hari berubah
             document.getElementById('filter-admin-mapel-val').value = "";
             document.getElementById('teks-admin-mapel').innerText = "Pilih Mapel...";
             document.getElementById('btn-admin-mapel').classList.remove('selected');
@@ -712,12 +653,14 @@
             const dbFiltered = dbAbsensi.filter(item => item.hari === adminFilterHari && item.mapel === adminFilterMapel);
             let hasilAkhir = [];
 
+            // Gabungkan dengan data asli untuk cari yang belum absen
             daftarNama.forEach(nama => {
                 let record = dbFiltered.find(item => item.nama === nama);
                 if (record) hasilAkhir.push({ nama: nama, status: record.status, keterangan: record.keterangan, foto: record.foto });
                 else hasilAkhir.push({ nama: nama, status: 'Belum Absen', keterangan: '-', foto: null });
             });
 
+            // Terapkan Filter Tab Dropdown
             if (adminFilterStatus !== 'Semua') {
                 hasilAkhir = hasilAkhir.filter(item => item.status === adminFilterStatus);
             }
@@ -758,7 +701,8 @@
                 return;
             }
 
-            [...dbAbsensi].reverse().forEach(data => {
+            // Susunan Kolom: Nama | Hari & Mapel | Status | Bukti | Waktu & Tanggal | Hapus (Aksi)
+            dbAbsensi.forEach(data => {
                 let badgeClass = data.status === 'Hadir' ? 'badge-hadir' : 'badge-izin';
                 let btnFoto = data.foto ? `<button class="btn-small btn-foto-small" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
                 let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}', '${data.lockKey}')">Hapus</button>`;
@@ -776,43 +720,39 @@
             });
         }
 
-        // DIUBAH: hapus dari Supabase, bukan localStorage
-        function hapusDataIndividu(id, lockKey) {
+        async function hapusDataIndividu(id, lockKey) {
             Swal.fire({
                 title: 'Hapus?', text: "Data absensi ini akan dihapus.",
                 icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8', confirmButtonText: 'Ya'
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    const { error } = await sb.from('absensi').delete().eq('id', id);
+                    // Hapus data dari Supabase berdasarkan id
+                    const { error } = await supabase.from('absensi').delete().eq('id', id);
                     if (error) {
-                        Swal.fire({title:'Gagal', text:'Gagal menghapus data.', icon:'error', timer:2500, timerProgressBar:true, showConfirmButton:false});
+                        Swal.fire({title:'Gagal', text:'Gagal menghapus data.', icon:'error', timer:2000, timerProgressBar:true, showConfirmButton:false});
                         return;
                     }
-                    dbAbsensi = dbAbsensi.filter(item => item.id !== id);
-                    
+                    // Data akan dihapus, realtime akan memperbarui dbAbsensi dan tampilan
                     Swal.fire({title:'Terhapus!', text:'Data berhasil dihapus.', icon:'success', timer: 2000, timerProgressBar: true, showConfirmButton: false});
-                    renderTabelAdmin(); renderNama(document.getElementById('search-nama').value);
                 }
             });
         }
 
-        // DIUBAH: reset dari Supabase, bukan localStorage
-        function resetSemuaData() {
+        async function resetSemuaData() {
             Swal.fire({
                 title: 'Yakin?', text: "Reset semua data absensi!",
                 icon: 'error', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8', confirmButtonText: 'Ya!'
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    const { error } = await sb.from('absensi').delete().neq('id', '');
+                    const { error } = await supabase.from('absensi').delete().neq('id', 0); // hapus semua
                     if (error) {
                         Swal.fire({title:'Gagal', text:'Gagal mereset data.', icon:'error', timer:2500, timerProgressBar:true, showConfirmButton:false});
                         return;
                     }
-                    dbAbsensi = [];
                     
                     Swal.fire({title:'Direset!', text:'Semua data dihapus.', icon:'success', timer: 2500, timerProgressBar: true, showConfirmButton: false});
-                    renderTabelAdmin();
-                    
+                    // Kosongkan variabel lokal dan reset UI
+                    dbAbsensi = [];
                     document.getElementById('hari').value = ""; document.getElementById('teks-hari').innerText = "Pilih hari kehadiran...";
                     document.getElementById('btn-pilih-hari').classList.remove('selected');
                     document.getElementById('mapel').value = ""; document.getElementById('teks-mapel').innerText = "Pilih mata pelajaran...";
@@ -876,8 +816,8 @@
             closeModal('modal-mapel'); renderNama(document.getElementById('search-nama').value);
         }
 
-        // --- 7. RENDER NAMA SISWA ---
-        function renderNama(filterText = "") {
+        // --- 7. RENDER NAMA SISWA (DENGAN SUPABASE CEK LOCK) ---
+        async function renderNama(filterText = "") {
             const listContainer = document.getElementById('list-nama');
             const hari = document.getElementById('hari').value;
             const mapel = document.getElementById('mapel').value;
@@ -891,12 +831,24 @@
                 return;
             }
 
+            // Jika hari dan mapel sudah dipilih, cek status absen dari Supabase
+            let sudahAbsenMap = new Set();
+            if (hari && mapel) {
+                // Ambil semua record untuk hari dan mapel ini
+                const { data, error } = await supabase
+                    .from('absensi')
+                    .select('nama')
+                    .eq('hari', hari)
+                    .eq('mapel', mapel);
+                if (!error && data) {
+                    data.forEach(record => sudahAbsenMap.add(record.nama));
+                }
+            }
+
             filtered.forEach(nama => {
                 let div = document.createElement('div'); div.className = 'name-item';
                 
-                const cekAbsenKunci = `absen_XIF7_${nama}_${hari}_${mapel}`;
-                // DIUBAH: cek di dbAbsensi (in-memory), bukan localStorage
-                const sudahAbsen = (hari && mapel && dbAbsensi.find(item => item.lockKey === cekAbsenKunci));
+                const sudahAbsen = sudahAbsenMap.has(nama);
 
                 if (sudahAbsen) {
                     div.innerHTML = `${nama} <span style="float:right; color:#10b981; font-weight:700;">✓ Tercatat</span>`;
@@ -907,15 +859,15 @@
                     div.onclick = () => {
                         stateNamaTerpilih = nama; 
                         document.getElementById('nama-terpilih').value = nama;
-                        document.getElementById('search-nama').value = nama;
-                        renderNama(nama);
+                        document.getElementById('search-nama').value = nama; // Set input otomatis
+                        renderNama(nama); // Langsung saring 1 nama
                     };
                 }
                 listContainer.appendChild(div);
             });
         }
         renderNama(); 
-        function filterNama() { renderNama(document.getElementById('search-nama').value); }
+        async function filterNama() { await renderNama(document.getElementById('search-nama').value); }
 
         // --- 8. KAMERA & STATUS ---
         function ubahStatus(status) {
@@ -933,7 +885,6 @@
             }
         }
 
-        let streamKamera = null;
         async function mulaiKamera() {
             try {
                 streamKamera = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
@@ -949,6 +900,7 @@
             const video = document.getElementById('video-kamera'); const canvas = document.getElementById('canvas-kamera'); const ctx = canvas.getContext('2d');
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Simpan sebagai data URL untuk sementara
             document.getElementById('foto-data').value = canvas.toDataURL('image/jpeg', 0.8);
             video.classList.add('hidden'); canvas.classList.remove('hidden');
             document.getElementById('btn-capture').classList.add('hidden'); document.getElementById('btn-retake').classList.remove('hidden');
@@ -959,7 +911,17 @@
             document.getElementById('btn-capture').classList.remove('hidden'); document.getElementById('btn-retake').classList.add('hidden');
         }
 
-        function getBase64(file) {
+        // Fungsi untuk mengonversi data URL ke Blob
+        function dataURLtoBlob(dataurl) {
+            var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], {type:mime});
+        }
+
+        async function getBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -968,7 +930,7 @@
             });
         }
 
-        // --- 9. PENGIRIMAN DATA (DIUBAH: simpan ke Supabase + Storage) ---
+        // --- 9. PENGIRIMAN DATA (DENGAN UPLOAD KE STORAGE) ---
         async function kirimAbsen() {
             const hari = document.getElementById('hari').value;
             const mapel = document.getElementById('mapel').value;
@@ -993,41 +955,55 @@
                 fotoSimpan = await getBase64(fileSurat[0]);
             }
 
-            const cekAbsenKunci = `absen_XIF7_${nama}_${hari}_${mapel}`;
-
-            // Cek duplikat absen di in-memory sebelum submit
-            if (dbAbsensi.find(item => item.lockKey === cekAbsenKunci)) {
-                return Swal.fire({title:'Sudah Absen', text:`${nama} sudah tercatat untuk pelajaran ini.`, icon:'warning', timer:2500, timerProgressBar:true, showConfirmButton:false});
-            }
-
-            // Tampilkan loading upload
-            Swal.fire({title:'Menyimpan...', text:'Harap tunggu sebentar.', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading()});
-
-            // Upload foto ke Supabase Storage
-            let fotoUrl = "";
-            if (fotoSimpan) {
-                fotoUrl = await uploadFoto(fotoSimpan, nama);
-            }
-
             const timeNow = new Date();
+            const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5);
+            const waktuStr = timeNow.toLocaleString('id-ID');
+
+            // Proses upload foto ke Supabase Storage
+            let publicUrl = '';
+            if (fotoSimpan) {
+                // Konversi base64 ke blob
+                const blob = dataURLtoBlob(fotoSimpan);
+                const fileExt = 'jpg'; // bisa disesuaikan
+                const fileName = `absensi_${uniqueId}.${fileExt}`;
+                
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('foto-absensi')
+                    .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
+                
+                if (uploadError) {
+                    console.error('Upload gagal:', uploadError);
+                    Swal.fire({title:'Gagal', text:'Gagal mengunggah bukti.', icon:'error', timer:2500, timerProgressBar:true, showConfirmButton:false});
+                    return;
+                }
+                
+                // Dapatkan URL publik
+                const { data: publicUrlData } = supabase.storage.from('foto-absensi').getPublicUrl(fileName);
+                publicUrl = publicUrlData.publicUrl;
+            }
+
+            // Simpan record ke tabel absensi
             const payload = {
-                id: "ID_" + timeNow.getTime(), lockKey: cekAbsenKunci, waktuStr: timeNow.toLocaleString('id-ID'),
-                hari: hari, mapel: mapel, nama: nama, status: status, keterangan: keterangan, foto: fotoUrl
+                id: uniqueId,
+                hari: hari,
+                mapel: mapel,
+                nama: nama,
+                status: status,
+                keterangan: keterangan,
+                foto: publicUrl,
+                waktu_str: waktuStr,
+                lock_key: `absen_XIF7_${nama}_${hari}_${mapel}`
             };
 
-            // Insert ke Supabase database
-            const { error: insertError } = await sb.from('absensi').insert([payloadToDb(payload)]);
+            const { error: insertError } = await supabase.from('absensi').insert(payload);
             if (insertError) {
-                Swal.close();
-                if (insertError.code === '23505') {
-                    return Swal.fire({title:'Sudah Absen', text:`${nama} sudah pernah absen untuk pelajaran ini.`, icon:'warning', timer:2500, timerProgressBar:true, showConfirmButton:false});
-                }
-                return Swal.fire({title:'Gagal Menyimpan', text:'Gagal menyimpan ke database. Periksa koneksi.', icon:'error', timer:3000, timerProgressBar:true, showConfirmButton:false});
+                console.error('Gagal menyimpan absen:', insertError);
+                Swal.fire({title:'Gagal', text:'Gagal menyimpan data absensi.', icon:'error', timer:2500, timerProgressBar:true, showConfirmButton:false});
+                return;
             }
 
-            // Update in-memory
-            dbAbsensi.push(payload);
-            Swal.close();
+            // Realtime akan otomatis memperbarui dbAbsensi, tetapi kita juga bisa langsung reload untuk memastikan
+            dbAbsensi = await loadAbsensiFromSupabase();
 
             Swal.fire({ title: 'Berhasil!', text: `${nama} telah absen.`, icon: 'success', timer:2500, timerProgressBar:true, showConfirmButton:false})
             .then(() => {
@@ -1037,70 +1013,6 @@
                 document.getElementById('surat-izin').value = ""; matikanKamera(); renderNama();
             });
         }
-
-        // ============================================================
-        // INIT APP: Load data dari Supabase + Setup Realtime
-        // ============================================================
-        async function initApp() {
-            try {
-                // Load semua data absensi
-                const { data: rows, error: rowErr } = await sb
-                    .from('absensi')
-                    .select('*')
-                    .order('created_at', { ascending: true });
-
-                if (!rowErr && rows) {
-                    dbAbsensi = rows.map(dbToPayload);
-                }
-
-                // Load status absensi dari settings
-                const { data: setting } = await sb
-                    .from('app_settings')
-                    .select('value')
-                    .eq('key', 'status_absen_XIF7')
-                    .maybeSingle();
-
-                if (setting) statusAbsensi = setting.value;
-
-                // Setup Realtime subscription
-                sb.channel('absensi-live')
-                    .on('postgres_changes',
-                        { event: 'INSERT', schema: 'public', table: 'absensi' },
-                        (payload) => {
-                            // Cegah duplikat dari insert sendiri
-                            if (!dbAbsensi.find(i => i.id === payload.new.id)) {
-                                dbAbsensi.push(dbToPayload(payload.new));
-                                if (document.getElementById('panel-dashboard-admin').classList.contains('active')) {
-                                    renderTabelAdmin();
-                                }
-                                renderNama(document.getElementById('search-nama')?.value || '');
-                            }
-                        }
-                    )
-                    .on('postgres_changes',
-                        { event: 'DELETE', schema: 'public', table: 'absensi' },
-                        (payload) => {
-                            dbAbsensi = dbAbsensi.filter(i => i.id !== payload.old.id);
-                            if (document.getElementById('panel-dashboard-admin').classList.contains('active')) {
-                                renderTabelAdmin();
-                            }
-                            renderNama(document.getElementById('search-nama')?.value || '');
-                        }
-                    )
-                    .subscribe();
-
-            } catch (e) {
-                console.error('Init error:', e);
-            } finally {
-                // Sembunyikan loading overlay
-                document.getElementById('loading-overlay').style.display = 'none';
-                // Refresh tampilan nama setelah data dimuat
-                renderNama(document.getElementById('search-nama')?.value || '');
-            }
-        }
-
-        // Jalankan init saat halaman siap
-        initApp();
     </script>
 </body>
 </html>
