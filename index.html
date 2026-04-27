@@ -437,10 +437,24 @@
     </div>
 
     <script>
-        // --- SUPABASE SETUP ---
+
+        // --- SUPABASE SETUP (dengan fallback) ---
+let supabase = null; // akan diisi jika SDK berhasil
+let dbAbsensi = [];   // inisialisasi kosong dulu
+
+try {
+    if (typeof window.supabase !== 'undefined') {
         const supabaseUrl = 'https://hwljckozqobryksiliip.supabase.co';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3bGpja296cW9icnlrc2lsaWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjIyMTQsImV4cCI6MjA5Mjg5ODIxNH0.HnUA_iF-OP38YjqK4laPLbpkbfDTiVuG189vJoIprn0';
-        const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        console.log('✅ Supabase siap');
+    } else {
+        throw new Error('SDK Supabase tidak ditemukan');
+    }
+} catch (e) {
+    console.warn('⚠️ Gagal Terhubung:', e.message);
+    alert('Koneksi ke server terganggu. Aplikasi akan berjalan dalam mode offline.\nBeberapa fitur mungkin tidak tersedia.');
+}
 
         // --- 1. DATA JADWAL & NAMA ---
         const jadwalPelajaran = {
@@ -497,34 +511,33 @@ function getFileNameFromUrl(publicUrl) {
             }));
         }
 
-        // Muat data awal
-        (async () => {
+        // Muat data awal hanya jika Supabase tersedia
+if (supabase) {
+    (async () => {
+        try {
             dbAbsensi = await loadAbsensiFromSupabase();
-            // Update tampilan yang mungkin membutuhkan data awal (jika sudah di panel admin, akan dirender saat switch)
-            // Juga setup realtime subscription
             supabase
                 .channel('absensi-changes')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'absensi' }, async (payload) => {
-                    // Reload data penuh setelah ada perubahan (insert/delete/update)
                     dbAbsensi = await loadAbsensiFromSupabase();
-                    // Jika sedang di dashboard admin, render ulang tabel
-                    const dashboardPanel = document.getElementById('panel-dashboard-admin');
-                    if (dashboardPanel.classList.contains('active')) {
+                    if (document.getElementById('panel-dashboard-admin').classList.contains('active')) {
                         renderTabelAdmin();
                     }
-                    // Jika panel absen aktif, mungkin perlu render ulang nama untuk lock
-                    const absenPanel = document.getElementById('panel-absen');
-                    if (absenPanel.classList.contains('active')) {
+                    if (document.getElementById('panel-absen').classList.contains('active')) {
                         renderNama(document.getElementById('search-nama').value);
                     }
-                    // Jika modal kehadiran terbuka, render ulang
-                    const modalKehadiran = document.getElementById('modal-kehadiran');
-                    if (modalKehadiran.classList.contains('show')) {
+                    if (document.getElementById('modal-kehadiran').classList.contains('show')) {
                         renderTabelKehadiran();
                     }
                 })
                 .subscribe();
-        })();
+        } catch (err) {
+            console.error('Gagal memuat data:', err);
+        }
+    })();
+} else {
+    console.log('Mode offline – tidak terhubung ke Supabase');
+}
 
         // --- 3. FITUR ADMIN: LOGIN & KONTROL ---
         function loginAdmin() {
