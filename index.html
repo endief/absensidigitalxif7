@@ -881,7 +881,7 @@
             localStorage.setItem('absensi_db_XIF7', JSON.stringify(dbAbsensi));
             localStorage.setItem(cekAbsenKunci, 'true');
 
-            Swal.fire({ title: 'Data Diterima!', text: `Absensi ${nama} sukses diverifikasi.`, icon: 'success', timer:2500, timerProgressBar:true, showConfirmButton:false})
+            Swal.fire({ title: 'Berhasil!', text: `${nama} telah absen.`, icon: 'success', timer:2500, timerProgressBar:true, showConfirmButton:false})
             .then(() => {
                 document.getElementById('nama-terpilih').value = ""; stateNamaTerpilih = ""; document.getElementById('search-nama').value = "";
                 document.querySelector('input[name="status"]:checked').checked = false;
