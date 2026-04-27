@@ -420,7 +420,7 @@
                 <div class="modal-item" onclick="pilihAdminStatus('Semua')">Semua</div>
                 <div class="modal-item" onclick="pilihAdminStatus('Hadir')">Hadir</div>
                 <div class="modal-item" onclick="pilihAdminStatus('Izin')">Izin</div>
-                <div class="modal-item" onclick="pilihAdminStatus('Belum Absen')">Belum Absen</div>
+                <div class="modal-item" onclick="pilihAdminStatus('Belum Absen')">Belum</div>
             </div>
         </div>
     </div>
@@ -702,7 +702,7 @@
             if(dbAbsensi.length === 0) return Swal.fire({title:'Kosong', text:'Belum ada yang abaen.', icon:'info', timer: 2500, timerProgressBar: true, showConfirmButton: false});
             const dataToExport = dbAbsensi.map(item => ({
                 "Nama Siswa": item.nama, "Hari": item.hari, "Mata Pelajaran": item.mapel,
-                "Status": item.status, "Alasan / Lampiran": item.keterangan || "Bukti", "Tanggal & Jam": item.waktuStr
+                "Status": item.status, "Alasan": item.keterangan || "Bukti", "Tanggal & Jam": item.waktuStr
             }));
             const worksheet = XLSX.utils.json_to_sheet(dataToExport);
             const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Absen");
