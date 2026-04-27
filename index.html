@@ -467,14 +467,14 @@
             const pass = document.getElementById('admin-pass').value;
 
             if(user === 'admin' && pass === 'admin123') {
-                Swal.fire({ title: 'Berhasil Masuk', text: 'Selamat datang di Panel Admin.', icon: 'success', timer: 2000, timerProgressBar: true, showConfirmButton: false })
+                Swal.fire({ title: 'Berhasil', text: 'Masuk sebagai pengelola.', icon: 'success', timer: 2000, timerProgressBar: true, showConfirmButton: false })
                 .then(() => {
                     document.getElementById('admin-user').value = ''; document.getElementById('admin-pass').value = '';
                     switchPanel('panel-dashboard-admin', true);
                     renderTabelAdmin();
                     updateTeksTombolBukaTutup();
                 });
-            } else { Swal.fire({title: 'Akses Ditolak', text: 'Username atau Password salah!', icon: 'error', timer: 2500, timerProgressBar: true, showConfirmButton: false}); }
+            } else { Swal.fire({title: 'Masuk Gagal', text: 'Username atau Password salah!', icon: 'error', timer: 2500, timerProgressBar: true, showConfirmButton: false}); }
         }
 
         function logoutAdmin() { switchPanel('panel-awal', false); }
@@ -483,7 +483,7 @@
             let isClosed = localStorage.getItem('status_absen_XIF7') === 'ditutup';
             if(isClosed) {
                 localStorage.setItem('status_absen_XIF7', 'dibuka');
-                Swal.fire({title: 'Absensi Dibuka', text: 'Siswa sekarang dapat melakukan absensi.', icon: 'success', timer: 2500, timerProgressBar: true, showConfirmButton: false});
+                Swal.fire({title: 'Absensi Dibuka', text: 'Siswa dapat melakukan absen.', icon: 'success', timer: 2500, timerProgressBar: true, showConfirmButton: false});
             } else {
                 localStorage.setItem('status_absen_XIF7', 'ditutup');
                 Swal.fire({title: 'Absensi Ditutup', text: 'Siswa tidak bisa absen lagi.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false});
@@ -500,7 +500,7 @@
 
         function cekDanBukaAbsen() {
             let isClosed = localStorage.getItem('status_absen_XIF7') === 'ditutup';
-            if(isClosed) Swal.fire({title:'Akses Ditolak', text:'Maaf, PENGELOLA telah menutup sesi absensi saat ini.', icon:'error', timer: 3000, timerProgressBar: true, showConfirmButton: false});
+            if(isClosed) Swal.fire({title:'Tidak bisa absen', text:'Absensi telah ditutup.', icon:'error', timer: 3000, timerProgressBar: true, showConfirmButton: false});
             else switchPanel('panel-absen');
         }
 
@@ -540,7 +540,7 @@
 
         function bukaModalAdminMapel() {
             if(!document.getElementById('filter-admin-hari-val').value) { 
-                return Swal.fire({icon: 'warning', title: 'Data Kurang', text: 'Pilih hari terlebih dahulu.', timer: 2000, timerProgressBar: true, showConfirmButton: false}); 
+                return Swal.fire({icon: 'warning', title: 'Gagal', text: 'Pilih hari terlebih dahulu.', timer: 2000, timerProgressBar: true, showConfirmButton: false}); 
             }
             openModal('modal-admin-mapel');
         }
