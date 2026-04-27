@@ -437,26 +437,26 @@
     </div>
 
     <script>
-
         // --- SUPABASE SETUP (dengan fallback) ---
-let supabase = null; // akan diisi jika SDK berhasil
-let dbAbsensi = [];   // inisialisasi kosong dulu
+        let supabase = null;
+        let dbAbsensi = [];   // <<< HANYA SATU DEKLARASI DI SINI
+        let streamKamera = null;
 
-try {
-    if (typeof window.supabase !== 'undefined') {
-        const supabaseUrl = 'https://hwljckozqobryksiliip.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3bGpja296cW9icnlrc2lsaWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjIyMTQsImV4cCI6MjA5Mjg5ODIxNH0.HnUA_iF-OP38YjqK4laPLbpkbfDTiVuG189vJoIprn0';
-        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-        console.log('✅ Supabase siap');
-    } else {
-        throw new Error('SDK Supabase tidak ditemukan');
-    }
-} catch (e) {
-    console.warn('⚠️ Gagal Terhubung:', e.message);
-    alert('Koneksi ke server terganggu. Aplikasi akan berjalan dalam mode offline.\nBeberapa fitur mungkin tidak tersedia.');
-}
+        try {
+            if (typeof window.supabase !== 'undefined') {
+                const supabaseUrl = 'https://brtxlwjoyheeyeqcvhfi.supabase.co';
+                const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydHhsd2pveWhlZXllcWN2aGZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzg5OTYsImV4cCI6MjA5MjYxNDk5Nn0.dSTRkB3Np4Rhmb0yfjNZ_CksO_QGYVXodW3b1mBtnOQ';
+                supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+                console.log('✅ Supabase siap');
+            } else {
+                throw new Error('SDK Supabase tidak ditemukan');
+            }
+        } catch (e) {
+            console.warn('⚠️ Supabase gagal diinisialisasi:', e.message);
+            alert('Koneksi ke server terganggu. Aplikasi akan berjalan dalam mode offline.\nBeberapa fitur mungkin tidak tersedia.');
+        }
 
-        // --- 1. DATA JADWAL & NAMA ---
+        // --- 1. DATA JADWAL & NAMA (TIDAK BERUBAH) ---
         const jadwalPelajaran = {
             "Senin": ["PKWU (07.10 - 08.30)", "BIOLOGI (08.30 - 09.50)", "BAHASA SUNDA (10.10 - 11.30)", "MATEMATIKA (11.30 - 13.40)", "BAHASA INDONESIA (13.40 - 15.00)"],
             "Selasa": ["SEJARAH (06.30 - 08.00)", "PJOK (08.00 - 10.30)", "EKONOMI (10.30 - 13.30)", "MATEMATIKA (13.30 - 15.00)"],
@@ -478,26 +478,14 @@ try {
 
         let stateNamaTerpilih = "";
 
-        // --- 2. SISTEM DATABASE SUPABASE (menggantikan localStorage) ---
-        let dbAbsensi = []; // akan diisi dari Supabase
-        let streamKamera = null;
-
-        // Fungsi mengekstrak nama file dari URL publik
-function getFileNameFromUrl(publicUrl) {
-    if (!publicUrl) return null;
-    const parts = publicUrl.split('/foto-absensi/');
-    if (parts.length < 2) return null;
-    return parts[1]; // contoh: absensi_ID_123.jpg
-}
-
-        // Fungsi untuk memuat semua data absensi dari Supabase
+        // --- 2. FUNGSI BANTUAN SUPABASE ---
         async function loadAbsensiFromSupabase() {
+            if (!supabase) return [];
             const { data, error } = await supabase.from('absensi').select('*').order('created_at', { ascending: false });
             if (error) {
                 console.error('Gagal memuat data absensi:', error);
                 return [];
             }
-            // mapping kolom ke format yang dipakai di kode (id, hari, mapel, nama, status, keterangan, foto, waktuStr, lockKey)
             return data.map(item => ({
                 id: item.id,
                 hari: item.hari,
@@ -511,33 +499,40 @@ function getFileNameFromUrl(publicUrl) {
             }));
         }
 
-        // Muat data awal hanya jika Supabase tersedia
-if (supabase) {
-    (async () => {
-        try {
-            dbAbsensi = await loadAbsensiFromSupabase();
-            supabase
-                .channel('absensi-changes')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'absensi' }, async (payload) => {
-                    dbAbsensi = await loadAbsensiFromSupabase();
-                    if (document.getElementById('panel-dashboard-admin').classList.contains('active')) {
-                        renderTabelAdmin();
-                    }
-                    if (document.getElementById('panel-absen').classList.contains('active')) {
-                        renderNama(document.getElementById('search-nama').value);
-                    }
-                    if (document.getElementById('modal-kehadiran').classList.contains('show')) {
-                        renderTabelKehadiran();
-                    }
-                })
-                .subscribe();
-        } catch (err) {
-            console.error('Gagal memuat data:', err);
+        function getFileNameFromUrl(publicUrl) {
+            if (!publicUrl) return null;
+            const parts = publicUrl.split('/foto-absensi/');
+            if (parts.length < 2) return null;
+            return parts[1];
         }
-    })();
-} else {
-    console.log('Mode offline – tidak terhubung ke Supabase');
-}
+
+        // Muat data awal jika Supabase tersedia
+        if (supabase) {
+            (async () => {
+                try {
+                    dbAbsensi = await loadAbsensiFromSupabase();
+                    supabase
+                        .channel('absensi-changes')
+                        .on('postgres_changes', { event: '*', schema: 'public', table: 'absensi' }, async (payload) => {
+                            dbAbsensi = await loadAbsensiFromSupabase();
+                            if (document.getElementById('panel-dashboard-admin').classList.contains('active')) {
+                                renderTabelAdmin();
+                            }
+                            if (document.getElementById('panel-absen').classList.contains('active')) {
+                                renderNama(document.getElementById('search-nama').value);
+                            }
+                            if (document.getElementById('modal-kehadiran').classList.contains('show')) {
+                                renderTabelKehadiran();
+                            }
+                        })
+                        .subscribe();
+                } catch (err) {
+                    console.error('Gagal memuat data:', err);
+                }
+            })();
+        } else {
+            console.log('Mode offline – tidak terhubung ke Supabase');
+        }
 
         // --- 3. FITUR ADMIN: LOGIN & KONTROL ---
         function loginAdmin() {
@@ -558,7 +553,10 @@ if (supabase) {
         function logoutAdmin() { switchPanel('panel-awal', false); }
 
         async function toggleStatusAbsensi() {
-            // Ambil status saat ini dari app_settings
+            if (!supabase) {
+                Swal.fire({title:'Offline', text:'Tidak terhubung ke server.', icon:'error'});
+                return;
+            }
             let { data, error } = await supabase.from('app_settings').select('value').eq('key', 'status_absen_XIF7').single();
             let isClosed = data && data.value === 'ditutup';
             
@@ -579,6 +577,7 @@ if (supabase) {
         }
 
         async function updateTeksTombolBukaTutup() {
+            if (!supabase) return;
             let { data, error } = await supabase.from('app_settings').select('value').eq('key', 'status_absen_XIF7').single();
             let isClosed = data && data.value === 'ditutup';
             let btn = document.getElementById('btn-toggle-absen');
@@ -587,16 +586,19 @@ if (supabase) {
         }
 
         async function cekDanBukaAbsen() {
+            if (!supabase) {
+                Swal.fire({title:'Offline', text:'Tidak terhubung ke server.', icon:'error'});
+                return;
+            }
             let { data, error } = await supabase.from('app_settings').select('value').eq('key', 'status_absen_XIF7').single();
             let isClosed = data && data.value === 'ditutup';
             if(isClosed) Swal.fire({title:'Tidak bisa absen', text:'Absensi telah ditutup.', icon:'error', timer: 3000, timerProgressBar: true, showConfirmButton: false});
             else switchPanel('panel-absen');
         }
 
-        // --- 4. FITUR ADMIN: KEHADIRAN (MODAL NUMPUK RAPI - KONSISTEN) ---
+        // --- 4. FITUR ADMIN: KEHADIRAN ---
         function bukaModalKehadiran() {
             openModal('modal-kehadiran');
-            // Reset Semua Input Filter
             document.getElementById('filter-admin-hari-val').value = "";
             document.getElementById('teks-admin-hari').innerText = "Pilih Hari...";
             document.getElementById('btn-admin-hari').classList.remove('selected');
@@ -617,7 +619,6 @@ if (supabase) {
             document.getElementById('teks-admin-hari').innerText = hari;
             document.getElementById('btn-admin-hari').classList.add('selected');
             
-            // Reset Mapel karena hari berubah
             document.getElementById('filter-admin-mapel-val').value = "";
             document.getElementById('teks-admin-mapel').innerText = "Pilih Mapel...";
             document.getElementById('btn-admin-mapel').classList.remove('selected');
@@ -674,14 +675,12 @@ if (supabase) {
             const dbFiltered = dbAbsensi.filter(item => item.hari === adminFilterHari && item.mapel === adminFilterMapel);
             let hasilAkhir = [];
 
-            // Gabungkan dengan data asli untuk cari yang belum absen
             daftarNama.forEach(nama => {
                 let record = dbFiltered.find(item => item.nama === nama);
                 if (record) hasilAkhir.push({ nama: nama, status: record.status, keterangan: record.keterangan, foto: record.foto });
                 else hasilAkhir.push({ nama: nama, status: 'Belum Absen', keterangan: '-', foto: null });
             });
 
-            // Terapkan Filter Tab Dropdown
             if (adminFilterStatus !== 'Semua') {
                 hasilAkhir = hasilAkhir.filter(item => item.status === adminFilterStatus);
             }
@@ -722,11 +721,10 @@ if (supabase) {
                 return;
             }
 
-            // Susunan Kolom: Nama | Hari & Mapel | Status | Bukti | Waktu & Tanggal | Hapus (Aksi)
             dbAbsensi.forEach(data => {
                 let badgeClass = data.status === 'Hadir' ? 'badge-hadir' : 'badge-izin';
                 let btnFoto = data.foto ? `<button class="btn-small btn-foto-small" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
-                let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}', '${data.lockKey}')">Hapus</button>`;
+                let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}')">Hapus</button>`;
                 
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -742,95 +740,76 @@ if (supabase) {
         }
 
         async function hapusDataIndividu(id) {
-    // Cari data yang akan dihapus (sebelum dihapus dari array)
-    const dataDihapus = dbAbsensi.find(item => item.id === id);
-    
-    Swal.fire({
-        title: 'Hapus?',
-        text: "Data absensi dan bukti fotonya akan dihapus.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#94a3b8',
-        confirmButtonText: 'Ya, hapus!'
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            // Hapus dari database
-            const { error } = await supabase.from('absensi').delete().eq('id', id);
-            if (error) {
-                Swal.fire({title:'Gagal', text:'Gagal menghapus data.', icon:'error', timer:2000, timerProgressBar:true, showConfirmButton:false});
-                return;
-            }
-
-            // Hapus file dari storage jika ada
-            if (dataDihapus && dataDihapus.foto) {
-                const fileName = getFileNameFromUrl(dataDihapus.foto);
-                if (fileName) {
-                    const { error: storageError } = await supabase.storage
-                        .from('foto-absensi')
-                        .remove([fileName]);
-                    if (storageError) {
-                        console.warn('Gagal menghapus file:', storageError);
-                        // Lanjut saja, karena data sudah terhapus
+            const dataDihapus = dbAbsensi.find(item => item.id === id);
+            
+            Swal.fire({
+                title: 'Hapus?', text: "Data absensi dan bukti fotonya akan dihapus.",
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8', confirmButtonText: 'Ya, hapus!'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    if (!supabase) {
+                        Swal.fire({title:'Offline', text:'Tidak terhubung ke server.', icon:'error'});
+                        return;
                     }
-                }
-            }
+                    const { error } = await supabase.from('absensi').delete().eq('id', id);
+                    if (error) {
+                        Swal.fire({title:'Gagal', text:'Gagal menghapus data.', icon:'error', timer:2000, timerProgressBar:true, showConfirmButton:false});
+                        return;
+                    }
 
-            Swal.fire({title:'Terhapus!', text:'Data dan file berhasil dihapus.', icon:'success', timer:2000, timerProgressBar:true, showConfirmButton:false});
-            // Realtime akan memperbarui tampilan
+                    if (dataDihapus && dataDihapus.foto) {
+                        const fileName = getFileNameFromUrl(dataDihapus.foto);
+                        if (fileName) {
+                            const { error: storageError } = await supabase.storage
+                                .from('foto-absensi')
+                                .remove([fileName]);
+                            if (storageError) console.warn('Gagal menghapus file:', storageError);
+                        }
+                    }
+
+                    Swal.fire({title:'Terhapus!', text:'Data dan file berhasil dihapus.', icon:'success', timer:2000, timerProgressBar:true, showConfirmButton:false});
+                }
+            });
         }
-    });
-}
 
         async function resetSemuaData() {
-    Swal.fire({
-        title: 'Yakin?',
-        text: "Reset semua data absensi dan hapus seluruh file bukti!",
-        icon: 'error',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#94a3b8',
-        confirmButtonText: 'Ya, reset semua!'
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            // 1. Kumpulkan semua nama file yang akan dihapus
-            const fileNames = dbAbsensi
-                .map(item => item.foto ? getFileNameFromUrl(item.foto) : null)
-                .filter(name => name !== null);
+            Swal.fire({
+                title: 'Yakin?', text: "Reset semua data absensi dan hapus seluruh file bukti!",
+                icon: 'error', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8', confirmButtonText: 'Ya, reset semua!'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    if (!supabase) {
+                        Swal.fire({title:'Offline', text:'Tidak terhubung ke server.', icon:'error'});
+                        return;
+                    }
+                    const fileNames = dbAbsensi
+                        .map(item => item.foto ? getFileNameFromUrl(item.foto) : null)
+                        .filter(name => name !== null);
 
-            // 2. Hapus semua file dari storage (jika ada)
-            if (fileNames.length > 0) {
-                const { error: storageError } = await supabase.storage
-                    .from('foto-absensi')
-                    .remove(fileNames);
-                if (storageError) {
-                    console.warn('Gagal menghapus beberapa file:', storageError);
+                    if (fileNames.length > 0) {
+                        const { error: storageError } = await supabase.storage
+                            .from('foto-absensi')
+                            .remove(fileNames);
+                        if (storageError) console.warn('Gagal menghapus beberapa file:', storageError);
+                    }
+
+                    const { error } = await supabase.from('absensi').delete().neq('id', 0);
+                    if (error) {
+                        Swal.fire({title:'Gagal', text:'Gagal mereset data.', icon:'error', timer:2500, timerProgressBar:true, showConfirmButton:false});
+                        return;
+                    }
+
+                    Swal.fire({title:'Direset!', text:'Semua data dan file terhapus.', icon:'success', timer:2500, timerProgressBar:true, showConfirmButton:false});
+                    dbAbsensi = [];
+                    document.getElementById('hari').value = ""; document.getElementById('teks-hari').innerText = "Pilih hari kehadiran...";
+                    document.getElementById('btn-pilih-hari').classList.remove('selected');
+                    document.getElementById('mapel').value = ""; document.getElementById('teks-mapel').innerText = "Pilih mata pelajaran...";
+                    document.getElementById('btn-pilih-mapel').classList.remove('selected');
+                    stateNamaTerpilih = ""; document.getElementById('nama-terpilih').value = ""; document.getElementById('search-nama').value = "";
+                    renderNama();
                 }
-            }
-
-            // 3. Hapus semua data dari tabel absensi
-            const { error } = await supabase.from('absensi').delete().neq('id', 0); // hapus semua
-            if (error) {
-                Swal.fire({title:'Gagal', text:'Gagal mereset data.', icon:'error', timer:2500, timerProgressBar:true, showConfirmButton:false});
-                return;
-            }
-
-            // 4. Reset UI
-            Swal.fire({title:'Direset!', text:'Semua data dan file terhapus.', icon:'success', timer:2500, timerProgressBar:true, showConfirmButton:false});
-            dbAbsensi = [];
-            document.getElementById('hari').value = "";
-            document.getElementById('teks-hari').innerText = "Pilih hari kehadiran...";
-            document.getElementById('btn-pilih-hari').classList.remove('selected');
-            document.getElementById('mapel').value = "";
-            document.getElementById('teks-mapel').innerText = "Pilih mata pelajaran...";
-            document.getElementById('btn-pilih-mapel').classList.remove('selected');
-            stateNamaTerpilih = "";
-            document.getElementById('nama-terpilih').value = "";
-            document.getElementById('search-nama').value = "";
-            renderNama();
+            });
         }
-    });
-}
 
         function downloadExcel() {
             if(dbAbsensi.length === 0) return Swal.fire({title:'Kosong', text:'Belum ada yang absen.', icon:'info', timer: 2500, timerProgressBar: true, showConfirmButton: false});
@@ -900,10 +879,8 @@ if (supabase) {
                 return;
             }
 
-            // Jika hari dan mapel sudah dipilih, cek status absen dari Supabase
             let sudahAbsenMap = new Set();
-            if (hari && mapel) {
-                // Ambil semua record untuk hari dan mapel ini
+            if (hari && mapel && supabase) {
                 const { data, error } = await supabase
                     .from('absensi')
                     .select('nama')
@@ -928,8 +905,8 @@ if (supabase) {
                     div.onclick = () => {
                         stateNamaTerpilih = nama; 
                         document.getElementById('nama-terpilih').value = nama;
-                        document.getElementById('search-nama').value = nama; // Set input otomatis
-                        renderNama(nama); // Langsung saring 1 nama
+                        document.getElementById('search-nama').value = nama;
+                        renderNama(nama);
                     };
                 }
                 listContainer.appendChild(div);
@@ -969,7 +946,6 @@ if (supabase) {
             const video = document.getElementById('video-kamera'); const canvas = document.getElementById('canvas-kamera'); const ctx = canvas.getContext('2d');
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            // Simpan sebagai data URL untuk sementara
             document.getElementById('foto-data').value = canvas.toDataURL('image/jpeg', 0.8);
             video.classList.add('hidden'); canvas.classList.remove('hidden');
             document.getElementById('btn-capture').classList.add('hidden'); document.getElementById('btn-retake').classList.remove('hidden');
@@ -980,7 +956,6 @@ if (supabase) {
             document.getElementById('btn-capture').classList.remove('hidden'); document.getElementById('btn-retake').classList.add('hidden');
         }
 
-        // Fungsi untuk mengonversi data URL ke Blob
         function dataURLtoBlob(dataurl) {
             var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
                 bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
@@ -1001,6 +976,10 @@ if (supabase) {
 
         // --- 9. PENGIRIMAN DATA (DENGAN UPLOAD KE STORAGE) ---
         async function kirimAbsen() {
+            if (!supabase) {
+                Swal.fire({title:'Offline', text:'Tidak terhubung ke server.', icon:'error'});
+                return;
+            }
             const hari = document.getElementById('hari').value;
             const mapel = document.getElementById('mapel').value;
             const nama = document.getElementById('nama-terpilih').value;
@@ -1028,12 +1007,10 @@ if (supabase) {
             const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5);
             const waktuStr = timeNow.toLocaleString('id-ID');
 
-            // Proses upload foto ke Supabase Storage
             let publicUrl = '';
             if (fotoSimpan) {
-                // Konversi base64 ke blob
                 const blob = dataURLtoBlob(fotoSimpan);
-                const fileExt = 'jpg'; // bisa disesuaikan
+                const fileExt = 'jpg';
                 const fileName = `absensi_${uniqueId}.${fileExt}`;
                 
                 const { data: uploadData, error: uploadError } = await supabase.storage
@@ -1046,12 +1023,10 @@ if (supabase) {
                     return;
                 }
                 
-                // Dapatkan URL publik
                 const { data: publicUrlData } = supabase.storage.from('foto-absensi').getPublicUrl(fileName);
                 publicUrl = publicUrlData.publicUrl;
             }
 
-            // Simpan record ke tabel absensi
             const payload = {
                 id: uniqueId,
                 hari: hari,
@@ -1071,7 +1046,6 @@ if (supabase) {
                 return;
             }
 
-            // Realtime akan otomatis memperbarui dbAbsensi, tetapi kita juga bisa langsung reload untuk memastikan
             dbAbsensi = await loadAbsensiFromSupabase();
 
             Swal.fire({ title: 'Berhasil!', text: `${nama} telah absen.`, icon: 'success', timer:2500, timerProgressBar:true, showConfirmButton:false})
