@@ -217,7 +217,7 @@
             <h2 class="panel-title">Dashboard Pengelola</h2>
             <p style="color: var(--neon-cyan); font-weight: 700; margin-bottom: 25px; text-align: center;">Pemantauan Real-Time</p>
             
-            <button class="btn-info" onclick="bukaModalKehadiran()">📊 Data Kehadiran (Filter Status)</button>
+            <button class="btn-info" onclick="bukaModalKehadiran()">Rekap Kehadiran</button>
             
             <div class="admin-controls">
                 <button id="btn-toggle-absen" onclick="toggleStatusAbsensi()" style="margin-bottom: 0;">Tutup Absensi</button>
@@ -297,16 +297,16 @@
                 </div>
 
                 <div id="area-izin" class="hidden">
-                    <label>Keterangan Absen (Izin/Sakit)</label>
+                    <label>Keterangan Absen</label>
                     <textarea id="keterangan-izin" class="input-field" rows="3" placeholder="Sertakan alasan yang jelas (Min. 5 huruf)..."></textarea>
                     
-                    <label style="margin-top: 20px;">Unggah Surat Bukti (*Wajib, Max 2MB)</label>
+                    <label style="margin-top: 20px;">Unggah Surat Bukti (Max 2MB)</label>
                     <input type="file" id="surat-izin" accept="image/*" class="input-field">
                 </div>
             </div>
 
             <br>
-            <button class="btn-primary" onclick="kirimAbsen()" style="margin-top: 10px;">Kirim Data Kehadiran</button>
+            <button class="btn-primary" onclick="kirimAbsen()" style="margin-top: 10px;">KIRIM</button>
             <button class="btn-text" onclick="switchPanel('panel-awal')">Batalkan Proses</button>
         </div>
     </div>
@@ -340,7 +340,7 @@
     <div id="modal-kehadiran" class="modal-overlay" onclick="closeModal('modal-kehadiran')">
         <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 800px; height: 95vh; display: flex; flex-direction: column; padding: 25px 20px;">
             <div class="modal-header" style="margin-bottom: 15px;">
-                <h3 style="font-size: 18px;">Monitor Kehadiran</h3>
+                <h3 style="font-size: 18px;">Rekap Kehadiran</h3>
                 <button class="close-btn" onclick="closeModal('modal-kehadiran')">✕</button>
             </div>
             
@@ -387,7 +387,7 @@
     <div id="modal-admin-hari" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-admin-hari')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3>Filter Hari</h3>
+                <h3>Pilih Hari</h3>
                 <button class="close-btn" onclick="closeModal('modal-admin-hari')">✕</button>
             </div>
             <div>
@@ -403,7 +403,7 @@
     <div id="modal-admin-mapel" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-admin-mapel')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3>Filter Mapel</h3>
+                <h3>Pilih Mapel</h3>
                 <button class="close-btn" onclick="closeModal('modal-admin-mapel')">✕</button>
             </div>
             <div id="list-admin-mapel-container"></div>
@@ -413,7 +413,7 @@
     <div id="modal-admin-status" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-admin-status')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3>Filter Status</h3>
+                <h3>Pilih Status</h3>
                 <button class="close-btn" onclick="closeModal('modal-admin-status')">✕</button>
             </div>
             <div>
@@ -428,7 +428,7 @@
     <div id="modal-preview-foto" class="modal-overlay modal-center" style="z-index: 1100;" onclick="closeModal('modal-preview-foto')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header" style="margin-bottom: 15px;">
-                <h3>Preview Bukti</h3>
+                <h3>Lihat Bukti</h3>
                 <button class="close-btn" onclick="closeModal('modal-preview-foto')">✕</button>
             </div>
             <img id="preview-image-src" src="" alt="Bukti Foto" style="width: 100%; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
@@ -467,7 +467,7 @@
             const pass = document.getElementById('admin-pass').value;
 
             if(user === 'admin' && pass === 'admin123') {
-                Swal.fire({ title: 'Otorisasi Berhasil', text: 'Selamat datang di Panel Admin.', icon: 'success', timer: 2000, timerProgressBar: true, showConfirmButton: false })
+                Swal.fire({ title: 'Berhasil Masuk', text: 'Selamat datang di Panel Admin.', icon: 'success', timer: 2000, timerProgressBar: true, showConfirmButton: false })
                 .then(() => {
                     document.getElementById('admin-user').value = ''; document.getElementById('admin-pass').value = '';
                     switchPanel('panel-dashboard-admin', true);
