@@ -470,7 +470,7 @@
 
         // Fungsi untuk memuat semua data absensi dari Supabase
         async function loadAbsensiFromSupabase() {
-            const { data, error } = await supabaseClient.from('loadAbsensiFromSupabase').select('*').order('created_at', { ascending: false });
+            const { data, error } = await supabase.from('absensi').select('*').order('created_at', { ascending: false });
             if (error) {
                 console.error('Gagal memuat data absensi:', error);
                 return [];
