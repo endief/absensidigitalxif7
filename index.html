@@ -444,7 +444,7 @@
 
         try {
             if (typeof window.supabase !== 'undefined') {
-                const supabaseUrl = 'https://hwljckozqobryksiliip.supabase.co';
+                const supabaseClient = 'https://hwljckozqobryksiliip.supabase.co';
                 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3bGpja296cW9icnlrc2lsaWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjIyMTQsImV4cCI6MjA5Mjg5ODIxNH0.HnUA_iF-OP38YjqK4laPLbpkbfDTiVuG189vJoIprn0';
                 supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
                 console.log('✅ Supabase siap');
@@ -481,7 +481,7 @@
         // --- 2. FUNGSI BANTUAN SUPABASE ---
         async function loadAbsensiFromSupabase() {
             if (!supabase) return [];
-            const { data, error } = await supabase.from('absensi').select('*').order('created_at', { ascending: false });
+            const { data, error } = await supabaseClient.from('absensi').select('*').order('created_at', { ascending: false });
             if (error) {
                 console.error('Gagal memuat data absensi:', error);
                 return [];
