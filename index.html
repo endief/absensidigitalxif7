@@ -332,20 +332,20 @@
         
         // KONFIGURASI FIREBASE (Untuk menyimpan Teks Database & Status Buka/Tutup)
         const firebaseConfig = {
-            apiKey: "API_KEY_FIREBASE_KAMU",
-            authDomain: "PROJECT_ID.firebaseapp.com",
-            databaseURL: "https://PROJECT_ID-default-rtdb.firebaseio.com",
-            projectId: "PROJECT_ID",
-            storageBucket: "PROJECT_ID.appspot.com",
-            messagingSenderId: "SENDER_ID",
-            appId: "APP_ID"
+            apiKey: "AIzaSyA_NfvZGXjqPKZ7QvUujP-5t0-CKbwwuhM",
+            authDomain: "absensi-kir-sman-1-lemahabang.firebaseapp.com",
+            databaseURL: "https://absensi-kir-sman-1-lemahabang-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "absensi-kir-sman-1-lemahabang",
+            storageBucket: "absensi-kir-sman-1-lemahabang.firebasestorage.app",
+            messagingSenderId: "434762674944",
+            appId: "1:434762674944:web:1760788b3f67ff9646f9e5"
         };
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
         // KONFIGURASI SUPABASE (Khusus untuk tempat penyimpanan/upload Foto saja)
-        const supabaseUrl = 'URL_SUPABASE_KAMU';
-        const supabaseKey = 'KEY_SUPABASE_KAMU';
+        const supabaseUrl = 'https://hwljckozqobryksiliip.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3bGpja296cW9icnlrc2lsaWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjIyMTQsImV4cCI6MjA5Mjg5ODIxNH0.HnUA_iF-OP38YjqK4laPLbpkbfDTiVuG189vJoIprn0';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
         
         // ==========================================
