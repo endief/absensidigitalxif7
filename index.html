@@ -225,7 +225,7 @@
             <p class="form-desc">We are Sevenmelt!</p>
             
             <div class="form-group">
-                <label>Har</label>
+                <label>Hari Kehadiran</label>
                 <input type="hidden" id="hari" value="">
                 <div class="custom-select-btn" id="btn-pilih-hari" onclick="openModal('modal-hari')">
                     <span id="teks-hari">Pilih hari kehadiran...</span> <span style="font-size: 12px; color: #94a3b8;">▼</span>
@@ -241,7 +241,7 @@
             </div>
 
             <div class="form-group">
-                <label>Nama Siswa Absen</label>
+                <label>Nama Siswa</label>
                 <input type="text" id="search-nama" class="input-field search-box" placeholder="⌕ Cari nama kamu..." oninput="filterNama()">
                 <div id="list-nama" class="name-list"></div>
                 <input type="hidden" id="nama-terpilih" value="">
@@ -273,7 +273,7 @@
 
                 <div id="area-izin" class="hidden">
                     <label>Keterangan Absen</label>
-                    <textarea id="keterangan-izin" class="input-field" rows="3" placeholder="Alasan..."></textarea>
+                    <textarea id="keterangan-izin" class="input-field" rows="3" placeholder="Ketik Alasan..."></textarea>
                     <label style="margin-top: 20px;">Unggah Surat Bukti (Max 2MB)</label>
                     <input type="file" id="surat-izin" accept="image/*" class="input-field">
                 </div>
@@ -431,9 +431,9 @@
         const daftarNama = [
             "AHMAD EKA RAMADANI", "AISY HALAWAH", "ALYA ZALIANTI ZAHRA", "ANI MULYANI", "ANISA NUR APRILIANI", 
             "DENNIS SEPTIANO", "DITA BELLA ANGGRAENI", "EZRA FAIQ", "HABLY ALFATIHIN", "IFTITA ARIQOH", 
-            "IIM QORIMAH", "JA'FAR SODIQ", "KAMILAH NURIL HS", "KESYA EKA ASTALITA", "KEYLA EDDYA WATTY", 
+            "IIM QORIMAH", "JA'FAR SODIQ", "KAMILAH NURIL HAYYU SYIFA", "KESYA EKA ASTALITA", "KEYLA EDDYA WATTY", 
             "MARWAH", "MUHAMMAD LUTHFI", "MUHAMMAD RIZKY NUGRAHA", "MYISHA FARRAS ADRINOVA", "NABIL DARUL FARIS", 
-            "NANANG SUMANTRI", "NAZWA AULIA", "NURUL FATIN A", "NURUL FIKRIYAH ZAK", "PUTRA DANU W", 
+            "NANANG SUMANTRI", "NAZWA AULIA", "NURUL FATIN AZKIYAH", "NURUL FIKRIYAH ZULFA AL KARIM", "PUTRA DANU WIGUNA", 
             "QUINAISHA LAILA KHANSA", "REVAND ZANDHAR LUTFI PRAYOGA", "SATRIO NADA", "SELPIA NOVITA SARI", "SITI MAESAROH", 
             "SITI NURI MAULIDYA", "SURYA AJI SAPUTRA", "SYAFIRA SULISTIANTI", "SYAHLAA BAITI", 
             "TRI SETYO NINGRUM", "ULVIANA KHOIRUNNISA", "ZELKHA SAID", "NUR HAFIZHOH"
@@ -445,29 +445,48 @@
 
         // ==== LISTENER REAL‑TIME FIREBASE ====
         function initFirebaseListeners() {
-            firebase.database().ref('absensi').on('value', (snapshot) => {
-                const val = snapshot.val();
-                dbAbsensi = val ? Object.keys(val).map(key => ({ id: key, ...val[key] })) : [];
-                
-                const dashboardPanel = document.getElementById('panel-dashboard-admin');
-                const absenPanel = document.getElementById('panel-absen');
-                const modalKehadiran = document.getElementById('modal-kehadiran');
+  // ===== 1. Listener data absensi (REAL‑TIME) =====
+  firebase.database().ref('absensi').on('value', (snapshot) => {
+    const val = snapshot.val();
+    dbAbsensi = val ? Object.keys(val).map(key => ({ id: key, ...val[key] })) : [];
 
-                if (dashboardPanel.classList.contains('active')) renderTabelAdmin();
-                if (absenPanel.classList.contains('active')) renderNama(document.getElementById('search-nama').value);
-                if (modalKehadiran.classList.contains('show')) renderTabelKehadiran();
-            });
+    const dashboardPanel = document.getElementById('panel-dashboard-admin');
+    const absenPanel = document.getElementById('panel-absen');
+    const modalKehadiran = document.getElementById('modal-kehadiran');
 
-            firebase.database().ref('settings/status_absen_XIF7').on('value', () => {});
-        }
-        initFirebaseListeners();
+    // Render ulang hanya jika panel/modal yang sesuai sedang aktif
+    if (dashboardPanel.classList.contains('active')) renderTabelAdmin();
+    if (absenPanel.classList.contains('active')) renderNama(document.getElementById('search-nama').value);
+    if (modalKehadiran.classList.contains('show')) renderTabelKehadiran();
+  });
+
+  // ===== 2. Listener status buka/tutup absensi (REAL‑TIME) =====
+  firebase.database().ref('settings/status_absen_XIF7').on('value', (snapshot) => {
+    const status = snapshot.val();
+    const absenPanel = document.getElementById('panel-absen');
+
+    // Jika absensi ditutup dan siswa sedang berada di panel absen, usir ke menu utama
+    if (status === 'ditutup' && absenPanel.classList.contains('active')) {
+      switchPanel('panel-awal');
+      matikanKamera();
+      Swal.fire({
+        title: 'Absensi Ditutup',
+        text: 'Pengelola telah menutup absensi.',
+        icon: 'warning',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false
+      });
+    }
+  });
+}
 
         // ==== FUNGSI ADMIN: LOGIN & KONTROL ====
         function loginAdmin() {
             const user = document.getElementById('admin-user').value;
             const pass = document.getElementById('admin-pass').value;
             if(user === 'admin' && pass === 'admin123') {
-                Swal.fire({ title: 'Berhasil', text: 'Masuk sebagai pengelola.', icon: 'success', timer: 2000, timerProgressBar: true, showConfirmButton: false })
+                Swal.fire({ title: 'Berhasil!', text: 'Masuk sebagai pengelola.', icon: 'success', timer: 2000, timerProgressBar: true, showConfirmButton: false })
                 .then(() => {
                     document.getElementById('admin-user').value = ''; document.getElementById('admin-pass').value = '';
                     switchPanel('panel-dashboard-admin', true);
