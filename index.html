@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* === SEMUA STYLE TETAP SAMA === */
+        /* === SEMUA STYLE LENGKAP === */
         :root {
             --bg-color: #f8fafc;
             --card-bg: rgba(255, 255, 255, 0.85);
@@ -211,13 +211,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Nama Siswa</th>
-                            <th>No. Telp</th>
-                            <th>Hari & Mapel</th>
-                            <th>Status</th>
-                            <th>Bukti</th>
-                            <th>Waktu & Tanggal</th>
-                            <th style="text-align: right;">Hapus</th>
+                            <th>Nama Siswa</th><th>Hari & Mapel</th><th>Status</th><th>Bukti</th><th>Waktu & Tanggal</th><th style="text-align: right;">Hapus</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-rekap"></tbody>
@@ -226,7 +220,7 @@
             <button class="btn-secondary" onclick="logoutAdmin()">Keluar</button>
         </div>
 
-        <!-- Panel Absen (Siswa) -->
+        <!-- Panel Absen (Siswa) - LENGKAP -->
         <div id="panel-absen" class="panel">
             <h2 class="panel-title">Forum Absensi XIF7</h2>
             <p class="form-desc">Isi seluruhnyaa...</p>
@@ -266,13 +260,6 @@
                 </div>
             </div>
 
-            <!-- Input Nomor Telepon Orang Tua/Wali (BARU) -->
-            <div class="form-group">
-                <label>Nomor Telepon Orang Tua/Wali</label>
-                <input type="tel" id="no-telp" class="input-field" placeholder="Contoh: 081234567890" inputmode="numeric">
-                <small style="color: #64748b; display: block; margin-top: 5px;">Wajib diisi – notifikasi akan dikirim ke nomor ini.</small>
-            </div>
-
             <div id="area-dinamis" class="hidden">
                 <div id="area-kamera" class="hidden">
                     <label>Bukti Hadir</label>
@@ -299,10 +286,13 @@
         </div>
     </div>
 
-    <!-- Semua Modal (tidak berubah) -->
+    <!-- Semua Modal Lengkap -->
     <div id="modal-hari" class="modal-overlay" onclick="closeModal('modal-hari')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>Jadwal Hari Ini</h3><button class="close-btn" onclick="closeModal('modal-hari')">✕</button></div>
+            <div class="modal-header">
+                <h3>Jadwal Hari Ini</h3>
+                <button class="close-btn" onclick="closeModal('modal-hari')">✕</button>
+            </div>
             <div id="list-hari-container">
                 <div class="modal-item" onclick="pilihHari('Senin')">Senin</div>
                 <div class="modal-item" onclick="pilihHari('Selasa')">Selasa</div>
@@ -315,14 +305,20 @@
 
     <div id="modal-mapel" class="modal-overlay" onclick="closeModal('modal-mapel')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>Daftar Pelajaran</h3><button class="close-btn" onclick="closeModal('modal-mapel')">✕</button></div>
+            <div class="modal-header">
+                <h3>Daftar Pelajaran</h3>
+                <button class="close-btn" onclick="closeModal('modal-mapel')">✕</button>
+            </div>
             <div id="list-mapel-container"></div>
         </div>
     </div>
 
     <div id="modal-kehadiran" class="modal-overlay" onclick="closeModal('modal-kehadiran')">
         <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 800px; height: 95vh; display: flex; flex-direction: column; padding: 25px 20px;">
-            <div class="modal-header" style="margin-bottom: 15px;"><h3 style="font-size: 18px;">Rekap Kehadiran</h3><button class="close-btn" onclick="closeModal('modal-kehadiran')">✕</button></div>
+            <div class="modal-header" style="margin-bottom: 15px;">
+                <h3 style="font-size: 18px;">Rekap Kehadiran</h3>
+                <button class="close-btn" onclick="closeModal('modal-kehadiran')">✕</button>
+            </div>
             <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
                 <div style="flex: 1; min-width: 150px;">
                     <input type="hidden" id="filter-admin-hari-val" value="">
@@ -344,23 +340,26 @@
                 </div>
             </div>
             <div class="table-responsive" style="flex: 1; margin-bottom: 0;">
-                <table style="min-width: 600px;">
+                <table style="min-width: 500px;">
                     <thead>
                         <tr>
-                            <th>Nama</th><th>No. Telp</th><th>Status</th><th>Bukti</th>
+                            <th>Nama Siswa</th><th>Status</th><th>Bukti</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-filter-kehadiran">
-                        <tr><td colspan="4" style="text-align:center; color:#888;">Silakan pilih Hari dan Mata Pelajaran di atas.</td></tr>
+                        <tr><td colspan="3" style="text-align:center; color:#888;">Silakan pilih Hari dan Mata Pelajaran di atas.</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- Modal lainnya tetap sama -->
     <div id="modal-admin-hari" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-admin-hari')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>Pilih Hari</h3><button class="close-btn" onclick="closeModal('modal-admin-hari')">✕</button></div>
+            <div class="modal-header">
+                <h3>Pilih Hari</h3><button class="close-btn" onclick="closeModal('modal-admin-hari')">✕</button>
+            </div>
             <div>
                 <div class="modal-item" onclick="pilihAdminHari('Senin')">Senin</div>
                 <div class="modal-item" onclick="pilihAdminHari('Selasa')">Selasa</div>
@@ -373,14 +372,18 @@
 
     <div id="modal-admin-mapel" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-admin-mapel')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>Pilih Mapel</h3><button class="close-btn" onclick="closeModal('modal-admin-mapel')">✕</button></div>
+            <div class="modal-header">
+                <h3>Pilih Mapel</h3><button class="close-btn" onclick="closeModal('modal-admin-mapel')">✕</button>
+            </div>
             <div id="list-admin-mapel-container"></div>
         </div>
     </div>
 
     <div id="modal-admin-status" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-admin-status')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>Pilih Status</h3><button class="close-btn" onclick="closeModal('modal-admin-status')">✕</button></div>
+            <div class="modal-header">
+                <h3>Pilih Status</h3><button class="close-btn" onclick="closeModal('modal-admin-status')">✕</button>
+            </div>
             <div>
                 <div class="modal-item" onclick="pilihAdminStatus('Semua')">Semua</div>
                 <div class="modal-item" onclick="pilihAdminStatus('Hadir')">Hadir</div>
@@ -392,7 +395,9 @@
 
     <div id="modal-preview-foto" class="modal-overlay modal-center" style="z-index: 1100;" onclick="closeModal('modal-preview-foto')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header" style="margin-bottom: 15px;"><h3>Lihat Bukti</h3><button class="close-btn" onclick="closeModal('modal-preview-foto')">✕</button></div>
+            <div class="modal-header" style="margin-bottom: 15px;">
+                <h3>Lihat Bukti</h3><button class="close-btn" onclick="closeModal('modal-preview-foto')">✕</button>
+            </div>
             <img id="preview-image-src" src="" alt="Bukti Foto" style="width: 100%; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
         </div>
     </div>
@@ -525,7 +530,7 @@
             document.getElementById('filter-admin-status-val').value = "Semua";
             document.getElementById('teks-admin-status').innerText = "Semua";
             document.getElementById('btn-admin-status').classList.remove('selected');
-            document.getElementById('tbody-filter-kehadiran').innerHTML = '<tr><td colspan="4" style="text-align:center; color:#888;">Silakan pilih Hari dan Mata Pelajaran di atas.</td></tr>';
+            document.getElementById('tbody-filter-kehadiran').innerHTML = '<tr><td colspan="3" style="text-align:center; color:#888;">Silakan pilih Hari dan Mata Pelajaran di atas.</td></tr>';
         }
 
         function pilihAdminHari(hari) {
@@ -580,7 +585,7 @@
             const tbody = document.getElementById('tbody-filter-kehadiran');
             
             if(!adminFilterHari || !adminFilterMapel) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#888;">Silakan pilih Hari dan Mata Pelajaran di atas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#888;">Silakan pilih Hari dan Mata Pelajaran di atas.</td></tr>';
                 return;
             }
 
@@ -588,15 +593,15 @@
             let hasilAkhir = [];
             daftarNama.forEach(nama => {
                 let record = dbFiltered.find(item => item.nama === nama);
-                if (record) hasilAkhir.push({ nama, status: record.status, keterangan: record.keterangan, foto: record.foto, noTelp: record.noTelp || '-' });
-                else hasilAkhir.push({ nama, status: 'Belum Absen', keterangan: '-', foto: null, noTelp: '-' });
+                if (record) hasilAkhir.push({ nama, status: record.status, keterangan: record.keterangan, foto: record.foto });
+                else hasilAkhir.push({ nama, status: 'Belum Absen', keterangan: '-', foto: null });
             });
             if (adminFilterStatus !== 'Semua') {
                 hasilAkhir = hasilAkhir.filter(item => item.status === adminFilterStatus);
             }
             tbody.innerHTML = "";
             if(hasilAkhir.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">Tidak ada data pada kategori ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#888;">Tidak ada data pada kategori ini.</td></tr>`;
                 return;
             }
             hasilAkhir.forEach(item => {
@@ -606,7 +611,6 @@
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${item.nama}</strong></td>
-                        <td>${item.noTelp}</td>
                         <td><span class="status-badge ${badgeClass}">${item.status}</span></td>
                         <td>${btnFoto} ${infoKet}</td>
                     </tr>
@@ -623,7 +627,7 @@
             const tbody = document.getElementById('tbody-rekap');
             tbody.innerHTML = "";
             if(dbAbsensi.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999;">Belum ada data absensi yang masuk.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#999;">Belum ada data absensi yang masuk.</td></tr>`;
                 return;
             }
             dbAbsensi.forEach(data => {
@@ -633,7 +637,6 @@
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${data.nama}</strong></td>
-                    <td>${data.noTelp || '-'}</td>
                     <td>${data.hari} <br> <span style="font-size:11px; color:#888;">${data.mapel}</span></td>
                     <td><span class="status-badge ${badgeClass}">${data.status}</span></td>
                     <td>${btnFoto}</td>
@@ -669,7 +672,6 @@
                     document.getElementById('mapel').value = ""; document.getElementById('teks-mapel').innerText = "Pilih mata pelajaran...";
                     document.getElementById('btn-pilih-mapel').classList.remove('selected');
                     stateNamaTerpilih = ""; document.getElementById('nama-terpilih').value = ""; document.getElementById('search-nama').value = "";
-                    document.getElementById('no-telp').value = ""; // reset input no telp
                     renderNama(); 
                 }
             });
@@ -678,13 +680,8 @@
         function downloadExcel() {
             if(dbAbsensi.length === 0) return Swal.fire({title:'Kosong', text:'Belum ada yang absen.', icon:'info', timer: 2500, timerProgressBar: true, showConfirmButton: false});
             const dataToExport = dbAbsensi.map(item => ({
-                "Nama Siswa": item.nama,
-                "No. Telp": item.noTelp || '-',
-                "Hari": item.hari,
-                "Mata Pelajaran": item.mapel,
-                "Status": item.status,
-                "Alasan": item.keterangan || "Bukti",
-                "Tanggal & Jam": item.waktuStr
+                "Nama Siswa": item.nama, "Hari": item.hari, "Mata Pelajaran": item.mapel,
+                "Status": item.status, "Alasan": item.keterangan || "Bukti", "Tanggal & Jam": item.waktuStr
             }));
             const worksheet = XLSX.utils.json_to_sheet(dataToExport);
             const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Absen");
@@ -829,18 +826,13 @@
             });
         }
 
-        // ==== KIRIM ABSEN (DENGAN NO. TELP) ====
+        // ==== KIRIM ABSEN (FOTO KE SUPABASE, DATA KE FIREBASE) ====
         async function kirimAbsen() {
             const hari = document.getElementById('hari').value;
             const mapel = document.getElementById('mapel').value;
             const nama = document.getElementById('nama-terpilih').value;
             const statusEl = document.querySelector('input[name="status"]:checked');
             const status = statusEl ? statusEl.value : null;
-            const noTelp = document.getElementById('no-telp').value.trim();
-
-            // Validasi baru: nomor telepon wajib diisi
-            if (!noTelp) return Swal.fire({title:'Gagal', text:'Nomor telepon orang tua/wali wajib diisi.', icon:'warning', timer: 2500, timerProgressBar:true, showConfirmButton:false});
-            if (!/^[0-9]{10,}$/.test(noTelp)) return Swal.fire({title:'Gagal', text:'Nomor telepon tidak valid. Minimal 10 digit angka.', icon:'warning', timer: 2500, timerProgressBar:true, showConfirmButton:false});
 
             if (!hari || !mapel || !nama || !status) return Swal.fire({title:'Gagal', text:'Isi semua data.', icon:'warning', timer: 2500, timerProgressBar:true, showConfirmButton:false});
 
@@ -886,26 +878,17 @@
                 keterangan: keterangan,
                 foto: publicUrl,
                 waktuStr: waktuStr,
-                noTelp: noTelp,   // simpan nomor telepon
                 lockKey: `absen_XIF7_${nama}_${hari}_${mapel}`
             };
 
             await firebase.database().ref('absensi/' + uniqueId).set(payload);
 
-            Swal.fire({
-                title: 'Berhasil!',
-                html: `${nama} telah absen.<br><small style="color:#64748b;">Pemberitahuan terkirim ke nomor ${noTelp}</small>`,
-                icon: 'success',
-                timer: 3000,
-                timerProgressBar: true,
-                showConfirmButton: false
-            }).then(() => {
+            Swal.fire({ title: 'Berhasil!', text: `${nama} telah absen.`, icon: 'success', timer:2500, timerProgressBar:true, showConfirmButton:false})
+            .then(() => {
                 document.getElementById('nama-terpilih').value = ""; stateNamaTerpilih = ""; document.getElementById('search-nama').value = "";
                 document.querySelector('input[name="status"]:checked').checked = false;
                 document.getElementById('area-dinamis').classList.add('hidden'); document.getElementById('label-hadir').classList.remove('active-hadir'); document.getElementById('label-izin').classList.remove('active-izin');
-                document.getElementById('surat-izin').value = "";
-                document.getElementById('no-telp').value = ""; // reset input no telp setelah sukses
-                matikanKamera();
+                document.getElementById('surat-izin').value = ""; matikanKamera();
             });
         }
     </script>
