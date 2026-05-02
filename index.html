@@ -443,9 +443,8 @@
         let dbAbsensi = [];
         let streamKamera = null;
 
-        // ==== LISTENER REAL‑TIME FIREBASE ====
         function initFirebaseListeners() {
-  // ===== 1. Listener data absensi (REAL‑TIME) =====
+  // 1. Listener data absensi
   firebase.database().ref('absensi').on('value', (snapshot) => {
     const val = snapshot.val();
     dbAbsensi = val ? Object.keys(val).map(key => ({ id: key, ...val[key] })) : [];
@@ -454,24 +453,22 @@
     const absenPanel = document.getElementById('panel-absen');
     const modalKehadiran = document.getElementById('modal-kehadiran');
 
-    // Render ulang hanya jika panel/modal yang sesuai sedang aktif
     if (dashboardPanel.classList.contains('active')) renderTabelAdmin();
     if (absenPanel.classList.contains('active')) renderNama(document.getElementById('search-nama').value);
     if (modalKehadiran.classList.contains('show')) renderTabelKehadiran();
   });
 
-  // ===== 2. Listener status buka/tutup absensi (REAL‑TIME) =====
+  // 2. Listener status buka/tutup (real-time)
   firebase.database().ref('settings/status_absen_XIF7').on('value', (snapshot) => {
     const status = snapshot.val();
     const absenPanel = document.getElementById('panel-absen');
 
-    // Jika absensi ditutup dan siswa sedang berada di panel absen, usir ke menu utama
     if (status === 'ditutup' && absenPanel.classList.contains('active')) {
       switchPanel('panel-awal');
       matikanKamera();
       Swal.fire({
         title: 'Absensi Ditutup',
-        text: 'Pengelola telah menutup absensi.',
+        text: 'Pengelola telah menutup absensi. Anda akan diarahkan ke menu utama.',
         icon: 'warning',
         timer: 3000,
         timerProgressBar: true,
@@ -480,6 +477,9 @@
     }
   });
 }
+
+// Di luar fungsi, panggil sekali:
+initFirebaseListeners();
 
         // ==== FUNGSI ADMIN: LOGIN & KONTROL ====
         function loginAdmin() {
