@@ -18,7 +18,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* === SEMUA STYLE LENGKAP === */
         :root {
             --bg-color: #f8fafc;
             --card-bg: rgba(255, 255, 255, 0.85);
@@ -178,12 +177,12 @@
                 <div class="instansi-sub">KABUPATEN CIREBON</div>
             </div>
             <button class="btn-primary" onclick="cekDanBukaAbsen()">ABSENSI</button>
-            <button class="btn-secondary" onclick="switchPanel('panel-pengelola')">Akses Pengelola</button>
+            <button class="btn-secondary" onclick="switchPanel('panel-pengelola')">Pengelola</button>
         </div>
 
         <!-- Panel Login Pengelola -->
         <div id="panel-pengelola" class="panel">
-            <h2 class="panel-title">Akses Masuk</h2>
+            <h2 class="panel-title">Akses Masuk Pengelola</h2>
             <p class="form-desc">Masukkan Username dan Password</p>
             <div class="form-group">
                 <label>Username</label>
@@ -206,7 +205,7 @@
                 <button id="btn-toggle-absen" onclick="toggleStatusAbsensi()" style="margin-bottom: 0;">Tutup Absensi</button>
                 <button class="btn-primary" onclick="downloadExcel()" style="margin-bottom: 0;">Download Excel</button>
             </div>
-            <button class="btn-danger" onclick="resetSemuaData()">Reset Seluruh Data</button>
+            <button class="btn-danger" onclick="resetSemuaData()">Reset Absensi</button>
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -222,11 +221,11 @@
 
         <!-- Panel Absen (Siswa) - LENGKAP -->
         <div id="panel-absen" class="panel">
-            <h2 class="panel-title">Forum Absensi XIF7</h2>
-            <p class="form-desc">Isi seluruhnyaa...</p>
+            <h2 class="panel-title">Pengisian Absensi XIF7</h2>
+            <p class="form-desc">We are Sevenmelt!</p>
             
             <div class="form-group">
-                <label>Hari Absensi</label>
+                <label>Har</label>
                 <input type="hidden" id="hari" value="">
                 <div class="custom-select-btn" id="btn-pilih-hari" onclick="openModal('modal-hari')">
                     <span id="teks-hari">Pilih hari kehadiran...</span> <span style="font-size: 12px; color: #94a3b8;">▼</span>
