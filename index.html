@@ -1046,76 +1046,104 @@
 
     // ==== KIRIM ABSEN (FOTO KE SUPABASE, DATA KE FIREBASE) ====
     async function kirimAbsen() {
-        const hari = document.getElementById('hari').value;
-        const mapel = document.getElementById('mapel').value;
-        const nama = document.getElementById('nama-terpilih').value;
-        const statusEl = document.querySelector('input[name="status"]:checked');
-        const status = statusEl ? statusEl.value : null;
+    const hari = document.getElementById('hari').value;
+    const mapel = document.getElementById('mapel').value;
+    const nama = document.getElementById('nama-terpilih').value;
+    const statusEl = document.querySelector('input[name="status"]:checked');
+    const status = statusEl ? statusEl.value : null;
 
-        if (!hari || !mapel || !nama || !status) {
-            return Swal.fire({title:'Gagal', text:'Isi semua data.', icon:'warning', timer:2500, timerProgressBar:true, showConfirmButton:false});
-        }
-        
-        let fotoSimpan = ""; let keterangan = "-";
-
-        if (status === 'Hadir') {
-            fotoSimpan = document.getElementById('foto-data').value;
-            if (!fotoSimpan) return Swal.fire({title:'Bukti Diperlukan', text:'Ambil Foto.', icon:'warning', timer:2500, timerProgressBar:true, showConfirmButton:false});
-        } else if (status === 'Izin') {
-            keterangan = document.getElementById('keterangan-izin').value.trim();
-            const fileSurat = document.getElementById('surat-izin').files;
-            if (keterangan.length < 5) return Swal.fire({title:'Ditolak', text:'Isi alasan terlebih dahulu', icon:'warning', timer:2500, timerProgressBar:true, showConfirmButton:false});
-            if (fileSurat.length === 0) return Swal.fire({title:'Surat Diperlukan', text:'Unggah foto bukti surat izin.', icon:'warning', timer:2500, timerProgressBar:true, showConfirmButton:false});
-            fotoSimpan = await getBase64(fileSurat[0]);
-        }
-
-        const timeNow = new Date();
-        const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5);
-        const waktuStr = timeNow.toLocaleString('id-ID');
-
-        let publicUrl = '';
-        if (fotoSimpan) {
-            const blob = dataURLtoBlob(fotoSimpan);
-            const fileExt = 'jpg';
-            const fileName = `absensi_${uniqueId}.${fileExt}`;
-            const { error: uploadError } = await supabaseClient.storage
-                .from('foto-absensi')
-                .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
-            if (uploadError) {
-                console.error('Upload gagal:', uploadError);
-                return Swal.fire({title:'Gagal', text:'Gagal mengunggah bukti.', icon:'error', timer:2500, timerProgressBar:true, showConfirmButton:false});
-            }
-            const { data: publicUrlData } = supabaseClient.storage.from('foto-absensi').getPublicUrl(fileName);
-            publicUrl = publicUrlData.publicUrl;
-        }
-
-        const payload = {
-            hari, mapel, nama, status, keterangan, foto: publicUrl, waktuStr, 
-            lockKey: `absen_XIF7_${nama}_${hari}_${mapel}`
-        };
-
-        await firebase.database().ref('absensi/' + uniqueId).set(payload);
-
-        Swal.fire({
-            title: 'Berhasil!',
-            html: `${nama} telah absen.<br><small>Pemberitahuan terkirim ke ${noTelp}</small>`,
-            icon: 'success',
-            timer: 3000,
-            timerProgressBar: true,
-            showConfirmButton: false
-        }).then(() => {
-            document.getElementById('nama-terpilih').value = "";
-            stateNamaTerpilih = "";
-            document.getElementById('search-nama').value = "";
-            document.querySelector('input[name="status"]:checked').checked = false;
-            document.getElementById('area-dinamis').classList.add('hidden');
-            document.getElementById('label-hadir').classList.remove('active-hadir');
-            document.getElementById('label-izin').classList.remove('active-izin');
-            document.getElementById('surat-izin').value = "";
-            document.getElementById('no-telp').value = "";
-            matikanKamera();
+    if (!hari || !mapel || !nama || !status) {
+        return Swal.fire({
+            title:'Gagal', text:'Isi semua data.',
+            icon:'warning', timer:2500, timerProgressBar:true, showConfirmButton:false
         });
     }
+
+    let fotoSimpan = ""; 
+    let keterangan = "-";
+
+    if (status === 'Hadir') {
+        fotoSimpan = document.getElementById('foto-data').value;
+        if (!fotoSimpan) {
+            return Swal.fire({
+                title:'Bukti Diperlukan', text:'Ambil Foto.',
+                icon:'warning', timer:2500, timerProgressBar:true, showConfirmButton:false
+            });
+        }
+    } else if (status === 'Izin') {
+        keterangan = document.getElementById('keterangan-izin').value.trim();
+        const fileSurat = document.getElementById('surat-izin').files;
+        if (keterangan.length < 5) {
+            return Swal.fire({
+                title:'Ditolak', text:'Isi alasan terlebih dahulu',
+                icon:'warning', timer:2500, timerProgressBar:true, showConfirmButton:false
+            });
+        }
+        if (fileSurat.length === 0) {
+            return Swal.fire({
+                title:'Surat Diperlukan', text:'Unggah foto bukti surat izin.',
+                icon:'warning', timer:2500, timerProgressBar:true, showConfirmButton:false
+            });
+        }
+        fotoSimpan = await getBase64(fileSurat[0]);
+    }
+
+    const timeNow = new Date();
+    const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5);
+    const waktuStr = timeNow.toLocaleString('id-ID');
+
+    let publicUrl = '';
+    if (fotoSimpan) {
+        const blob = dataURLtoBlob(fotoSimpan);
+        const fileExt = 'jpg';
+        const fileName = `absensi_${uniqueId}.${fileExt}`;
+        const { error: uploadError } = await supabaseClient.storage
+            .from('foto-absensi')
+            .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
+        if (uploadError) {
+            console.error('Upload gagal:', uploadError);
+            return Swal.fire({
+                title:'Gagal', text:'Gagal mengunggah bukti.',
+                icon:'error', timer:2500, timerProgressBar:true, showConfirmButton:false
+            });
+        }
+        const { data: publicUrlData } = supabaseClient.storage.from('foto-absensi').getPublicUrl(fileName);
+        publicUrl = publicUrlData.publicUrl;
+    }
+
+    const payload = {
+        hari: hari,
+        mapel: mapel,
+        nama: nama,
+        status: status,
+        keterangan: keterangan,
+        foto: publicUrl,
+        waktuStr: waktuStr,
+        lockKey: `absen_XIF7_${nama}_${hari}_${mapel}`
+    };
+
+    await firebase.database().ref('absensi/' + uniqueId).set(payload);
+
+    Swal.fire({
+        title: 'Berhasil!',
+        text: `${nama} telah absen.`,
+        icon: 'success',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false
+    }).then(() => {
+        document.getElementById('nama-terpilih').value = "";
+        stateNamaTerpilih = "";
+        document.getElementById('search-nama').value = "";
+        const checkedRadio = document.querySelector('input[name="status"]:checked');
+        if (checkedRadio) checkedRadio.checked = false;
+        document.getElementById('area-dinamis').classList.add('hidden');
+        document.getElementById('label-hadir').classList.remove('active-hadir');
+        document.getElementById('label-izin').classList.remove('active-izin');
+        document.getElementById('surat-izin').value = "";
+        matikanKamera();
+    });
+}
 </script>
 </body>
 </html>
